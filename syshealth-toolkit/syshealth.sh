@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
 # ===============================================
 # syshealth.sh - System Health & Log Analysis Toolkit
-# Lab 1 - Data Collector
-# Author: Gannon Strother
-# Date: $(date +%Y-%m-%d)
-OUTPUT_FILE="$1"
-# =============================================
-
-#!/usr/bin/env bash
-# ===============================================
-# syshealth.sh - System Health & Log Analysis Toolkit
 # Lab 3 - Refactoring into Functions
-# Author: Your Name
-# Date: YYYY-MM-DD
+# Author: Gannon Strother
+# Date: 2026-10-5
 # ===============================================
 # --- Thresholds (global, used by multiple functions) ---
 CPU_THRESHOLD=75
@@ -93,7 +84,7 @@ run_health_checks() {
 		overall_status=1
 	fi
 	# Store result for generate_report / exit
-	HEALTH_STATUS="$overall_status
+	HEALTH_STATUS="$overall_status"
 	return "$overall_status"
 }
 
@@ -102,16 +93,45 @@ parse_arguments() {
 }
 
 
-
-
+generate_report() {
+# Re-collect the human-readable metrics (same as Lab 1)
+	local CURRENT_DATE HOSTNAME UPTIME DISK_USAGE MEMORY_USAGE PROCESS_COUNT
+	CURRENT_DATE=$(date '+%Y-%m-%d %H:%M:%S')
+	HOSTNAME=$(hostname)
+	UPTIME=$(uptime -p)
+	DISK_USAGE=$(df -h / | tail -1)
+	MEMORY_USAGE=$(free -h | awk '/Mem:/ {print $3 "/" $2}')
+	PROCESS_COUNT=$(ps -e | wc -l)
+	printf "========================================\n"
+	printf "System Health Report - %s\n" "$CURRENT_DATE"
+	printf "Hostname : %s\n" "$HOSTNAME"
+	printf "Uptime : %s\n" "$UPTIME"
+	printf "Disk / : %s\n" "$DISK_USAGE"
+	printf "Memory used : %s\n" "$MEMORY_USAGE"
+	printf "Total processes : %s\n" "$PROCESS_COUNT"
+	printf "Health status : %s\n" "$([ "${HEALTH_STATUS:-0}" -eq 0 ] && echo "HEALTHY" || echo "UNHEALTHY - see alerts above")"
+	printf "========================================\n"
+}
 
 
 main() {
-	# This will be the ONLY code that runs at the top level
 	parse_arguments "$@"
+# Run all health checks (prints colored alerts to terminal)
 	run_health_checks
-	generate_report
+# Generate the structured report (to screen or file)
+	if [ -n "$OUTPUT_FILE" ]; then
+		generate_report > "$OUTPUT_FILE"
+		echo "Report written to $OUTPUT_FILE"
+	else
+		generate_report
+	fi
+# Exit with the aggregated health status from run_health_checks
+	exit "${HEALTH_STATUS:-0}"
 }
 
+
+
+
 # The single call that starts everything — must be the very last line
-main
+
+main "$@"
