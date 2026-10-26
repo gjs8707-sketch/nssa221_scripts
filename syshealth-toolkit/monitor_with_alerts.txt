@@ -1,0 +1,9 @@
+========================================
+System Health Report - 2026-10-05 19:40:12
+Hostname : obi.gjs8707.com
+Uptime : up 1 hour, 1 minute
+Disk / : /dev/mapper/rl-root   25G  5.4G   20G  22% /
+Memory used : 3.0Gi/3.5Gi
+Total processes : 353
+Health status : UNHEALTHY - see alerts above
+========================================
